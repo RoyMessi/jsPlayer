@@ -1,0 +1,15 @@
+@charset "UTF-8";
+
+body{display: flex;}
+
+video[class^='player-']{width:100%;}
+.player-note-container{position: absolute; top:0;left:0;right:0;bottom:0; background: #06060642;}
+.player-note{position: absolute; top:50%; left: 50%; transform: translate(-50%, -50%);color: #fff;}
+.player-note.fas{font-size: 2rem;}
+.player-container{position:relative;width: 500px; margin-left: 20px;}
+.timeline-container{width: 100%; background: #272626; margin-bottom: 2px;}
+.timeline-container .timeline{background: #b3b3b9; width: 0; height: 10px;}
+.volume-container{display: inline-block; position: relative; top: 5px; left: 20px;}
+.player-btn:nth-child(3){margin-left:0;}
+.player-btn{cursor:pointer;margin:0 0.2rem; padding:0.3rem 0.7rem; color:#fff; font-size:0.5rem; border: 1px solid #716d6d; background:#393940;}
+.player-btn:hover{border: 1px solid #8e8787; background:#777171;}
