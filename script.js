@@ -17,6 +17,7 @@
     const CONTROLS_CLASS_NAMES = ['player-controls','player-controls-buttons','timeline','timeline-container','player-btn','volume'];
     const PLAYER_NOTES = {
         404:{type:'error',title:'404',message:"Media source not exists"},
+        generalError:{type:'error',title:'Error',message:"Can't play this video"},
         unsupportedVideoFile:{type:'error',title:'Unsupported Video Format',message:"Player does not support <strong>%s</strong> format",data:[]},
     };
 
@@ -282,6 +283,7 @@
                 setPlayerSource:function(player,options){
                     let mimeType = Global.getPlayerInstance(player).playerSettings.mediaMimeType;
                     player.innerHTML = '<source src="'+options.src+'" type="'+mimeType+'">';
+                    player.load();
                 }
             }
         })();
@@ -384,6 +386,7 @@
                 console.log('e',e);
             });
             player.addEventListener('error',function(e){
+                Global.playerNotes(player,PLAYER_NOTES.generalError).messageFormat();
                 console.log('e',e);
             });
             player.addEventListener('loadeddata',function(e){
