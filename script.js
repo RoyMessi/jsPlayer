@@ -54,7 +54,6 @@
                                 }
                             }
                             subtitleElem.innerHTML = text;
-                            console.log("_subtitles[startTime].text",text);
                         },
                         addToPlayerInstance:function(text){
                             let reader = new FileReader();
@@ -418,22 +417,24 @@
                     }
                     if(e.type!=='drop') return true;
                     let files = e.dataTransfer.files;
-                    let src = files[0].name;
 
-                    let ex = src.substr(src.lastIndexOf('.')+1);
-                    if(VALID_SUBTITLE_TYPE.indexOf(ex)>-1){
-                        Global.subtitles(player).addToPlayerInstance(files[0]);
-                        return true;
-                    }
-
-                    if( !Global.playerSupportType(player,e.dataTransfer.items[0]).isSupported() ){
-                        return true;
-                    }
-
-                    if(src.indexOf('http://')===-1 && src.indexOf('https://')===-1){
-                        Global.resetPlayer(player,{
-                            src:LOCAL_MEDIA_PATH+src
-                        });
+                    for(let i=0; i<files.length; i++){
+                        let src = files[i].name;
+                        // Subtitles
+                        let ex = src.substr(src.lastIndexOf('.')+1);
+                        if(VALID_SUBTITLE_TYPE.indexOf(ex)>-1){
+                            Global.subtitles(player).addToPlayerInstance(files[i]);
+                        }
+                        // Media
+                        else{
+                            if( Global.playerSupportType(player,e.dataTransfer.items[i]).isSupported() ){
+                                if(src.indexOf('http://')===-1 && src.indexOf('https://')===-1){
+                                    Global.resetPlayer(player,{
+                                        src:LOCAL_MEDIA_PATH+src
+                                    });
+                                }
+                            }
+                        }
                     }
                 });
             });

@@ -8,7 +8,8 @@ Or just
 ~~~
 var p = new Player();
 ~~~
-And drag & drop the source you want.
+And drag & drop the media file you want to play
 
-
-**Player support also in drag & drop srt files**
+## Player Features
+* Support in Drag & Drop srt files
+* Support Drag & Drop media file and subtitles file at the same time
