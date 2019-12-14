@@ -6,6 +6,8 @@ body{display: flex;}
 .player-container .message,
 .subtitles-container,
 .player-container .duration{font-family:sans-serif;}
+
+.player-container.audio{height: 72px;background: #000;}
 video[player-id],.player-container,.player-note-container{outline: none;}
 video[player-id]{width:100%;height: 100%;background: #000;}
 .player-note-container{position: absolute;top:0;left:0;right:0;bottom:0;background: #06060642;opacity:0;

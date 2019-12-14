@@ -281,8 +281,15 @@
                     }
                 },
                 setPlayerSource:function(player,options){
-                    let mimeType = Global.getPlayerInstance(player).playerSettings.mediaMimeType;
-                    player.innerHTML = '<source src="'+options.src+'" type="'+mimeType+'">';
+                    let mimeType = '';
+                    if(options.mediaMimeType) mimeType = options.mediaMimeType;
+                    else{
+                        try{
+                            mimeType = Global.getPlayerInstance(player).playerSettings.mediaMimeType;
+                        }catch{}
+                    }
+                    let attrType = VALID_MIME_TYPE_EXCEPTIONS.indexOf(mimeType)>-1 ? '' : ' type="'+mimeType+'"';
+                    player.innerHTML = '<source src="'+options.src+'"'+attrType+'>';
                     player.load();
                 }
             }
@@ -535,16 +542,16 @@
             })(),
             build:function(settings){
                 let id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-                if(settings.mediaType==='') settings.mediaType = 'video';
+                if(settings.mediaType==='' || typeof(settings.mediaType)!=='string') settings.mediaType = 'video';
                 let player = document.createElement(settings.mediaType);
-                if(settings.src!=='') Global.setPlayerSource(player,{src:settings.src});
+                if(settings.src!=='') Global.setPlayerSource(player,{src:settings.src,mediaMimeType:settings.mediaMimeType});
                 player.tabIndex = -1;
                 player.volume = DEFAULT_VOLUME;
                 player.muted = DEFAULT_MUTED;
                 player.setAttribute(PLAYER_ID_ATTR,id);
 
                 let playerContainer = document.createElement('div');
-                playerContainer.className = 'player-container';
+                playerContainer.className = 'player-container '+settings.mediaType;
                 playerContainer.appendChild(player);
 
                 HandleEvents(player,playerContainer);
@@ -564,6 +571,10 @@
                     }
                     src = src.substr(src.lastIndexOf('.')+1);
                     params.mediaType = VALID_EXTENSION[ src ];
+
+                    let t = {};
+                    for(let i in VALID_MIME_TYPE) t[ VALID_MIME_TYPE[i] ] = i;
+                    params.mediaMimeType = t[src];
                 }
                 return params;
             }
