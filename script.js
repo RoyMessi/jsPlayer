@@ -3,7 +3,7 @@
      * @See https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types
      */
     const VALID_EXTENSION = {'mp3':'audio','m4a':'audio','mp4':'video','mkv':'video'};
-    const VALID_MIME_TYPE = ['audio/mp3','audio/mpeg','audio/x-m4a','video/mp4','video/x-matroska'];
+    const VALID_MIME_TYPE = {'audio/mp3':'mp3','video/mp4':'mp4','video/x-matroska':'mkv'};
     const VALID_MIME_TYPE_EXCEPTIONS = ['video/x-matroska'];
     const VALID_SUBTITLE_TYPE = ['srt'];
     const LOCAL_MEDIA_PATH = './media/';
@@ -78,7 +78,6 @@
                     if(typeof(options.src)!=='undefined' && options.src){
                         Global.playerNotes(player).removeAll();
                         this.checkPlayerSrc(player,options.src);
-                        // player.src = options.src;
                     }
                 },
                 checkPlayerSrc:function(player,src){
@@ -86,7 +85,7 @@
                     http.open('HEAD',src);
                     http.onreadystatechange = function() {
                         if (this.readyState === this.DONE) {
-                            if(this.status===200) player.src = src;
+                            if(this.status===200) Global.setPlayerSource(player,{src:src});
                             else if(this.status===404) Global.playerNotes(player,PLAYER_NOTES['404']).messageFormat();
                         }
                     };
@@ -97,14 +96,14 @@
                         isSupported:function(){
                             // This is for subtitles
                             if(obj.kind==='file' && obj.type==='') return true;
-                            let valid = ['probably','maybe'];
-                            if(VALID_MIME_TYPE_EXCEPTIONS.indexOf(player.canPlayType(obj.type))>-1){
-                                valid = true;
-                            }
-                            return (valid && VALID_MIME_TYPE.indexOf(obj.type)>-1);
+
+                            if(VALID_MIME_TYPE_EXCEPTIONS.indexOf(obj.type)>-1) return (obj.type).toLowerCase();
+                            let valid = (['probably','maybe'].indexOf(player.canPlayType(obj.type).toLowerCase())>-1);
+                            return (valid && Object.keys(VALID_MIME_TYPE).indexOf(obj.type)>-1) ? (obj.type).toLowerCase() : false;
                         },
                         showNote:function(){
-                            if(!this.isSupported()) Global.playerNotes(player,PLAYER_NOTES.unsupportedVideoFile).messageFormat([obj.type]);
+                            if(this.isSupported()) Global.playerNotes(player,PLAYER_NOTES.unsupportedVideoFile).removeAll();
+                            else Global.playerNotes(player,PLAYER_NOTES.unsupportedVideoFile).messageFormat([obj.type]);
                         }
                     }
                 },
@@ -249,6 +248,13 @@
                     let pTime = this.getPlayerInstance(player).playerTimeout.controls;
                     let pc = player.parentElement.querySelector('.player-controls').classList;
                     let stopFunc = false;
+
+                    if(player.paused){
+                        if(pTime) clearTimeout(pTime);
+                        pc.add('show');
+                        return true;
+                    }
+
                     if(event){
                         CONTROLS_CLASS_NAMES.map(function(className){
                             if(event.target.className.indexOf(className)>-1){
@@ -272,6 +278,10 @@
                             pc.remove('show');
                         },1500);
                     }
+                },
+                setPlayerSource:function(player,options){
+                    let mimeType = Global.getPlayerInstance(player).playerSettings.mediaMimeType;
+                    player.innerHTML = '<source src="'+options.src+'" type="'+mimeType+'">';
                 }
             }
         })();
@@ -427,7 +437,9 @@
                         }
                         // Media
                         else{
-                            if( Global.playerSupportType(player,e.dataTransfer.items[i]).isSupported() ){
+                            let mimeType = Global.playerSupportType(player,e.dataTransfer.items[i]).isSupported();
+                            if( mimeType ){
+                                Global.getPlayerInstance(player).playerSettings.mediaMimeType = mimeType;
                                 if(src.indexOf('http://')===-1 && src.indexOf('https://')===-1){
                                     Global.resetPlayer(player,{
                                         src:LOCAL_MEDIA_PATH+src
@@ -522,7 +534,7 @@
                 let id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
                 if(settings.mediaType==='') settings.mediaType = 'video';
                 let player = document.createElement(settings.mediaType);
-                if(settings.src!=='') player.src = settings.src;
+                if(settings.src!=='') Global.setPlayerSource(player,{src:settings.src});
                 player.tabIndex = -1;
                 player.volume = DEFAULT_VOLUME;
                 player.muted = DEFAULT_MUTED;
